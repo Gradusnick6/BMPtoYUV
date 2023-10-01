@@ -1,6 +1,8 @@
 #pragma once
 #include "structs.h"
 #include "Bitmap24.h"
+#include <vector>
+#include <thread>
 using namespace std;
 
 /// <summary>
@@ -18,6 +20,14 @@ private:
 	short height;
 	int frameNum;
 
+	/// <summary>
+	/// Преобразует RGB пиксели в YUV420 пиксели
+	/// Полученные данные помещаются в массив data
+	/// </summary>
+	/// <param name="bmp">изображение с данными в RGB</param>
+	/// <param name="start">определяет начало(вкл) диапазона заполнения массива data</param>
+	/// <param name="end">определяет конец(вкл) диапазона заполнения массива data</param>
+	void setYUVpixels(Bitmap24 bmp, unsigned int start, unsigned int end);
 	/// <summary>
 	/// Вставляет изображение размеров меньших this.width и this.height
 	/// Вставка осуществляется с левого верхнего края видеоролика

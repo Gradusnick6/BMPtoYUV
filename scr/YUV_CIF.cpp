@@ -121,7 +121,9 @@ void YUV_CIF::glue(const char* yuvFilePath, const char* bmpFilePath)
 		return;
 	}
 	YUV_CIF bmpV;
+
 	bmpV.convert_RGBtoYUV(bmp);
+
 	char* bmpData = bmpV.getData();
 
 	// если разрешение картинки равно разрешению видео
@@ -204,6 +206,33 @@ void YUV_CIF::convert_RGBtoYUV(Bitmap24 bmp)
 {
 	BMP_INFO_HEADER ih = bmp.getInfoHeader();
 	init(ih);
+	const int THREADS_SIZE = 3;
+	unsigned int elements_per_thread = ih.size_image / (THREADS_SIZE + 1);
+	unsigned int start = 0;
+	unsigned int end = start + elements_per_thread;
+
+	std::vector<std::thread*> th(THREADS_SIZE);
+	for (int i = 0; i < th.size(); i++)
+	{
+
+		th[i] = new std::thread(
+			[bmp, start, end, this] {
+				setYUVpixels(bmp, start, end);
+			});
+		start = end + 1;
+		end += elements_per_thread + 1;
+		if (end > ih.size_image)
+			end = ih.size_image;
+	}
+	setYUVpixels(bmp, start, end);
+	for (int i = 0; i < th.size(); i++)
+		th[i]->join();
+	th.clear();
+}
+
+void YUV_CIF::setYUVpixels(Bitmap24 bmp, unsigned int start, unsigned int end)
+{
+	BMP_INFO_HEADER ih = bmp.getInfoHeader();
 	unsigned int lineSize = ih.size_image / ih.height;
 	unsigned long count = 0;
 	unsigned char* bmpData = bmp.getData();
@@ -235,8 +264,6 @@ void YUV_CIF::convert_RGBtoYUV(Bitmap24 bmp)
 		}
 	}
 }
-
-
 
 void YUV_CIF::init(BMP_INFO_HEADER ih)
 {
