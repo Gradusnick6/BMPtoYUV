@@ -225,9 +225,10 @@ void YUV_CIF::convert_RGBtoYUV(Bitmap24 bmp)
 			end = ih.size_image;
 	}
 	setYUVpixels(bmp, start, end);
-	for (int i = 0; i < th.size(); i++)
+	for (int i = 0; i < th.size(); i++) {
 		th[i]->join();
-	th.clear();
+		delete th[i];
+	}
 }
 
 void YUV_CIF::setYUVpixels(Bitmap24 bmp, unsigned int start, unsigned int end)
